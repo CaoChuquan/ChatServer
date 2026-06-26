@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# Cmake 文件
+/build
+
+# 可执行文件
+/bin
