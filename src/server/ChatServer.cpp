@@ -1,5 +1,6 @@
 #include "ChatServer.h"
 #include "json.hpp"
+#include "ChatService.h"
 
 using nlohmann::json;
 
@@ -30,8 +31,10 @@ void ChatServer::onConnection(const TcpConnectionPtr& conn) {
     }
 }
 
-void ChatServer::onMessage(const TcpConnectionPtr&conn, Buffer* buffer, Timestamp time) {
+void ChatServer::onMessage(const TcpConnectionPtr& conn, Buffer* buffer, Timestamp time) {
     std::string buf = buffer->retrieveAllAsString();
     json js = json::parse(buf);  // 把接收到的数据反序列化为 json 对象
-    
+    auto msghandler = ChatService::instance()->getHandler(js["msgid"].get<int>());
+    // 回调消息对应的处理器，执行相应的业务
+    msghandler(conn, js, time);
 }

@@ -10,6 +10,7 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 # 头文件搜索路径
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/server)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty)
 
 # 加载子目录
 add_subdirectory(src)
