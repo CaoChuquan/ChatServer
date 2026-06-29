@@ -24,7 +24,8 @@ ChatService::MsgHandler ChatService::getHandler(int msgid) {
         return [msgid](const TcpConnectionPtr&, json&, Timestamp) {
             LOG_ERROR << "msgid: " << msgid << " cannot find!";
         };
-    } else {
+    } 
+    else {
         return msgHandlerMap_[msgid];
     }
 }
@@ -32,11 +33,11 @@ ChatService::MsgHandler ChatService::getHandler(int msgid) {
 void ChatService::loginServer(const TcpConnectionPtr& conn, 
     json& js, Timestamp time)
 {
-
+    LOG_INFO << "do login service!";
 }
 
 void ChatService::registerServer(const TcpConnectionPtr& conn,
     json& js, Timestamp time)
 {
-
+    LOG_INFO << "do regisert service!";
 }

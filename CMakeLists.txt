@@ -11,6 +11,7 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/server)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/database)
 
 # 加载子目录
 add_subdirectory(src)
