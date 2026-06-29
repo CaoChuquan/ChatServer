@@ -1,11 +1,11 @@
 # chat-server
 
-#### 分布式即时通讯服务器
+#### 1. 分布式即时通讯服务器
 
 &emsp;&emsp;基于 C++11、Muduo、MySQL、Redis、Nginx 实现的分布式即时通讯系统。支持用户注册、登录、好友管理、一对一聊天、群组聊天、离线消息存储等功能，并通过 Redis 发布订阅机制实现跨服务器消息通信，通过 Nginx 实现负载均衡与集群部署。
 
 ---
-#### 项目特点
+#### 2. 项目特点
 * 基于 Muduo 网络库开发高并发服务器
 * Reactor + One Loop Per Thread 网络模型
 * MySQL 持久化存储用户数据
@@ -14,7 +14,7 @@
 * JSON 消息序列化
 * 支持离线消息存储与同步
 ---
-#### 技术栈
+#### 3. 技术栈
 
 |  技术   |    作用    |
 | :---: | :------: |
@@ -27,7 +27,7 @@
 | Linux |   运行环境   |
 
 ---
-#### 系统架构说明
+#### 4. 系统架构说明
 1. 客户端首先连接 Nginx。
 
 2. Nginx 将连接分发到后端 ChatServer。
@@ -71,7 +71,7 @@
 * 离线消息
 
 ---
-#### Redis 集群通信
+#### 5. Redis 集群通信
 
 ##### 问题
 &emsp;&emsp;单机聊天服务器只能处理当前服务器上的用户。
@@ -109,50 +109,46 @@ subscribe(channel)
 实现服务器之间的消息转发。
 
 ---
-#### 数据库设计
-##### User
+#### 6. 数据库设计
+**User表**
+
+|字段名称|字段类型|字段说明|约束|
+|---|---|---|---|
+|id|INT|用户id|PRIMARY KEY、AUTO_INCREMENT|
+|name|VARCHAR(50)|用户名|NOT NULL、UNIQUE|
+|password|VARCHAR(50)|用户密码|NOT NULL|
+|state|ENUM('online', 'offline')|用户状态|DEFAULT 'offline'|
+
+**Friend表**
+
+|字段名称|字段类型|字段说明|约束|
+|---|---|---|---|
+|userid|INT|用户id|NOT NULL、联合主键|
+|friendid|INT|好友id|NOT NULL、联合主键|
+
+**AllGroup表**
+
+|字段名称|字段类型|字段说明|约束|
+|---|---|---|---|
+|id|INT|组id|PRIMARY KEY、AUTO_INCREMENT|
+|groupname|VARCHAR(50)|组名称|NOT NULL|
+|groupdesc|VARCHAR(200)|组功能描述|DEFAULT ''|
+
+**GroupUser 表**
+
+|字段名称|字段类型|字段说明|约束|
+|---|---|---|---|
+|groupid|INT|组id|PRIMARY KEY|
+|userid|INT|组员id|NOT NULL|
+|grouprole|ENUM('creator', 'normal')|组内角色|DEFAULT 'normal'|
 
 
-| 字段       | 说明   |
+**OfflineMessage 表**
 
-| -------- | ---- |
-
-| id       | 用户ID |
-
-| name     | 用户名  |
-
-| password | 密码   |
-
-| state    | 在线状态 |
-
-  
-
-##### Friend
-
-  
-
-| 字段       | 说明   |
-
-| -------- | ---- |
-
-| userid   | 用户ID |
-
-| friendid | 好友ID |
-
-  
-
-##### OfflineMessage
-
-  
-
-| 字段      | 说明   |
-
-| ------- | ---- |
-
-| userid  | 用户ID |
-
-| message | 离线消息 |
-
+|字段名称|字段类型|字段说明|约束|
+|---|---|---|---|
+|userid|INT|用户id|PRIMARY KEY|
+|message|VARCHAR(500)|离线消息（存储Json字符串）|NOT NULL|
   
 
 ---
