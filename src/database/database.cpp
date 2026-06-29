@@ -25,7 +25,7 @@ bool MySQL::connect() {
     MYSQL* p = mysql_real_connect(conn_, server.c_str(), user.c_str(),
                                   password.c_str(), dbname.c_str(), 3306, nullptr, 0);
     if (p != nullptr) {
-        // C和C++代码默认的编码字符是ASCII，如果不设置，从MySQL上拉下来的中文显示乱码
+        // C和C++代码默认的编码字符是 ASCII，如果不设置，从 MySQL 上拉下来的中文显示乱码
         mysql_query(conn_, "set names gbk");
         LOG_INFO << "connect mysql success!";
     }
