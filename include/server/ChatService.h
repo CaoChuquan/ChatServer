@@ -9,8 +9,6 @@ using nlohmann::json;
 using namespace muduo;
 using namespace muduo::net;
 
-
-
 // 聊天服务器业务类
 class ChatService {
 public:
@@ -30,5 +28,8 @@ private:
 
     // 储存业务 id 和其对应业务处理方法
     std::unordered_map<int, MsgHandler> msgHandlerMap_;
+
+    // 数据操作类对象
+    // UserModel userModel_;
 };
 

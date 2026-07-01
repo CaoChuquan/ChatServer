@@ -7,7 +7,7 @@ using std::string;
 static string server = "127.0.0.1";
 static string user = "root";
 static string password = "123456";
-static string dbname = "chat";
+static string dbname = "chat_server";
 
 // 初始化数据库连接
 MySQL::MySQL() {
