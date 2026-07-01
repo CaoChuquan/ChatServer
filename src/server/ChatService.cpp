@@ -5,6 +5,8 @@
 #include <string>
 #include <muduo/base/Logging.h>
 
+using std::string;
+
 // 获取单例对象
 ChatService* ChatService::instance() {
     static ChatService service;
@@ -13,10 +15,10 @@ ChatService* ChatService::instance() {
 
 ChatService::ChatService() {
     msgHandlerMap_.insert({ LOGIN_MSG, 
-        [this](const TcpConnectionPtr& c, json& j, Timestamp t) 
+        [this](const TcpConnectionPtr& c, json& j, Timestamp t)
         { this->loginServer(c, j, t); } });
     msgHandlerMap_.insert({ REGISTER_MSG, 
-        [this](const TcpConnectionPtr& c, json& j, Timestamp t) 
+        [this](const TcpConnectionPtr& c, json& j, Timestamp t)
         { this->registerServer(c, j, t); } }); 
 }
 
@@ -35,14 +37,71 @@ ChatService::MsgHandler ChatService::getHandler(int msgid) {
 void ChatService::loginServer(const TcpConnectionPtr& conn, 
     json& js, Timestamp time)
 {
-    LOG_INFO << "do login service!";
+    int enter_id = js["id"];
+    string enter_pwd = js["password"];
+
+
+    string user_pwd;
+    string user_stat;
+    // 查找用户
+    char sql[100] = { 0 };
+    sprintf(sql, "select * from User from where id = %d", enter_id);
+    MySQL mysql;
+    if (mysql.connect()) {
+        MYSQL_RES* res = mysql.query(sql);
+        if (res != nullptr) {
+            MYSQL_ROW row = mysql_fetch_row(res);
+            if (row != nullptr) {
+                user_pwd = row[2];
+                user_stat = row[3];
+            }
+            else {
+                // 待定
+                LOG_ERROR << "mysql_fetch_row() return nullptr";
+            }
+        }
+        else {
+            LOG_ERROR << "usesr_id:" << enter_id << " not found";
+        }
+    }
+    else {
+        LOG_FATAL << "Failed to connect to the database";
+    }
+
+    // 检测用户是否已经登录
+    if (user_stat == "online") {
+        json response;
+        response["msgid"] = LOGIN_MSG_ACK;
+        response["errno"] = 2;
+        response["errmsg"] = "该账号已登录";
+        conn->send(response.dump());
+    }
+
+    // 查找到用户后，匹配密码
+    if (enter_pwd == user_pwd) {
+        // 更新用户状态
+        // 上下文
+
+        json response;
+        response["msgid"] = LOGIN_MSG_ACK;
+        response["errno"] = 0;
+        // response["id"] =
+        // response["name"] =
+        conn->send(response.dump());
+    }
+    else {
+        json response;
+        response["msgid"] = LOGIN_MSG_ACK;
+        response["errno"] = 1;
+        conn->send(response.dump());
+    }
 }
 
 void ChatService::registerServer(const TcpConnectionPtr& conn,
     json& js, Timestamp time)
 {
-    std::string name = js["name"];
-    std::string password = js["password"];
+    string name = js["name"];
+    string password = js["password"];
 
     // 组装 SQL 语句
     char sql[1024] = { 0 };
@@ -55,17 +114,17 @@ void ChatService::registerServer(const TcpConnectionPtr& conn,
         int id = mysql_insert_id(mysql.getConnection());
 
         // 创建 User 对象
-        User user(id, name, password);
+        // User user(id, name, password);
 
         json response;
-        response["msgid"] = REGISTER_ACK;
+        response["msgid"] = REGISTER_MSG_ACK;
         response["errno"] = 0;
-        response["id"] = user.getId();
+        response["id"] = id;
         conn->send(response.dump());
     }
     else {
         json response;
-        response["msgid"] = REGISTER_ACK;
+        response["msgid"] = REGISTER_MSG_ACK;
         response["errno"] = 1;
         conn->send(response.dump());
     }
