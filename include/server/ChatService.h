@@ -3,6 +3,7 @@
 #include <muduo/net/TcpConnection.h>
 #include <unordered_map>
 #include <functional>
+#include <mutex>
 #include "json.hpp"
 
 using nlohmann::json;
@@ -29,7 +30,12 @@ private:
     // 储存业务 id 和其对应业务处理方法
     std::unordered_map<int, MsgHandler> msgHandlerMap_;
 
+    // 存储在线用户的通信连接
+    std::unordered_map<int, TcpConnectionPtr> userConnMap_;
+
     // 数据操作类对象
     // UserModel userModel_;
+
+    std::mutex mutex_;
 };
 

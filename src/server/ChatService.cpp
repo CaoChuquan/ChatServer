@@ -40,7 +40,6 @@ void ChatService::loginServer(const TcpConnectionPtr& conn,
     int enter_id = js["id"];
     string enter_pwd = js["password"];
 
-
     string user_pwd;
     string user_stat;
     // 查找用户
@@ -80,7 +79,14 @@ void ChatService::loginServer(const TcpConnectionPtr& conn,
     // 查找到用户后，匹配密码
     if (enter_pwd == user_pwd) {
         // 更新用户状态
-        // 上下文
+        char sql[100] = { 0 };
+        sprintf(sql, "update User set state = 'online' where id = %d", enter_id);
+
+        // 记录用户连接信息
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            userConnMap_.insert({enter_id, conn});
+        }
 
         json response;
         response["msgid"] = LOGIN_MSG_ACK;
