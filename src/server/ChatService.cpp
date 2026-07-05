@@ -81,7 +81,7 @@ void ChatService::loginServer(const TcpConnectionPtr& conn,
 
     // 查找到用户后，匹配密码
     if (enter_pwd == user_pwd) {
-        // 更新用户状态
+        // 登录成功，更新用户状态
         userUpdateState(enter_id, true);
 
         // 记录用户连接信息
@@ -93,8 +93,6 @@ void ChatService::loginServer(const TcpConnectionPtr& conn,
         json response;
         response["msgid"] = LOGIN_MSG_ACK;
         response["errno"] = 0;
-        // response["id"] =
-        // response["name"] =
         conn->send(response.dump());
     }
     else {
@@ -166,4 +164,5 @@ void ChatService::oneChat(const TcpConnectionPtr& conn,
     }
 
     // to_id 不在线，存储离线消息
+
 }
