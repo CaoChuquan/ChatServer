@@ -1,6 +1,7 @@
 #include "ChatService.h"
 #include "public.h"
 #include "UserModel.h"
+#include "OfflineMessageModel.h"
 #include <string>
 #include <muduo/base/Logging.h>
 
@@ -93,6 +94,14 @@ void ChatService::loginServer(const TcpConnectionPtr& conn,
         json response;
         response["msgid"] = LOGIN_MSG_ACK;
         response["errno"] = 0;
+        // 查询用户是否有离线消息
+        std::vector<std::string> vec = offlineMessageQuery(enter_id);
+        if (!vec.empty()) {
+            response["offlinemsg"] = vec;
+            // 读取该用户离线消息后，把该用户的离线消息删除
+            offlineMessageRemove(enter_id);
+        }
+
         conn->send(response.dump());
     }
     else {
@@ -164,5 +173,5 @@ void ChatService::oneChat(const TcpConnectionPtr& conn,
     }
 
     // to_id 不在线，存储离线消息
-
+    offlineMessageStore(to_id, js.dump());
 }

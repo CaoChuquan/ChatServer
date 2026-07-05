@@ -1,7 +1,7 @@
-#include "OfflineMessage.h"
+#include "OfflineMessageModel.h"
 #include "database.h"
 
-void OfflineMessage::store(int id, std::string msg) {
+void offlineMessageStore(int id, std::string msg) {
     char sql[1024] = { 0 };
     sprintf(sql, "insert into OfflineMessage values(%d, '%s')", 
             id, msg.c_str());
@@ -12,7 +12,7 @@ void OfflineMessage::store(int id, std::string msg) {
     }
 }
 
-void OfflineMessage::remove(int id) {
+void offlineMessageRemove(int id) {
     char sql[100] = { 0 };
     sprintf(sql, "delete from OfflineMessage where userid = %d", id);
 
@@ -22,7 +22,7 @@ void OfflineMessage::remove(int id) {
     }
 }
 
-std::vector<std::string> OfflineMessage::query(int id) {
+std::vector<std::string> offlineMessageQuery(int id) {
     char sql[100] = { 0 };
     sprintf(sql, "select message from OfflineMessage where userid = %d", id);
 
