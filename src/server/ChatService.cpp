@@ -12,13 +12,17 @@ ChatService* ChatService::instance() {
     return &service;
 }
 
+// 注册消息以及对应的事件回调
 ChatService::ChatService() {
     msgHandlerMap_.insert({ LOGIN_MSG, 
         [this](const TcpConnectionPtr& c, json& j, Timestamp t)
         { this->loginServer(c, j, t); } });
     msgHandlerMap_.insert({ REGISTER_MSG, 
         [this](const TcpConnectionPtr& c, json& j, Timestamp t)
-        { this->registerServer(c, j, t); } }); 
+        { this->registerServer(c, j, t); } });
+    msgHandlerMap_.insert({ ONE_CHAT_MSG, 
+        [this](const TcpConnectionPtr& c, json& j, Timestamp t)
+        { this->oneChat(c, j, t); } });
 }
 
 ChatService::MsgHandler ChatService::getHandler(int msgid) {
@@ -78,7 +82,7 @@ void ChatService::loginServer(const TcpConnectionPtr& conn,
     // 查找到用户后，匹配密码
     if (enter_pwd == user_pwd) {
         // 更新用户状态
-        UserUpdateState(enter_id, true);
+        userUpdateState(enter_id, true);
 
         // 记录用户连接信息
         {
@@ -107,19 +111,9 @@ void ChatService::registerServer(const TcpConnectionPtr& conn,
     string name = js["name"];
     string password = js["password"];
 
-    // 组装 SQL 语句
-    char sql[1024] = { 0 };
-    sprintf(sql, "insert into User(name, password, state) values('%s', '%s', 'offline')",
-        name.c_str(), password.c_str());
-    // 执行 SQL 语句
-    MySQL mysql;
-    if (mysql.connect() && mysql.update(sql)) {
-        // 获取插入成功的用户数据生成的主键 id
-        int id = mysql_insert_id(mysql.getConnection());
-
-        // 创建 User 对象
-        // User user(id, name, password);
-
+    // 注册
+    int id = userRegister(name, password);
+    if (id != -1) {
         json response;
         response["msgid"] = REGISTER_MSG_ACK;
         response["errno"] = 0;
@@ -151,6 +145,25 @@ void ChatService::clientCloseExpection(const TcpConnectionPtr& conn) {
 
     // 更新用户信息
     if (id != -1) {
-        UserUpdateState(id, false);
+        userUpdateState(id, false);
     }
+}
+
+void ChatService::oneChat(const TcpConnectionPtr& conn, 
+    json& js, Timestamp time)
+{
+    int to_id = js["to"].get<int>();
+
+    bool userState = true;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto it = userConnMap_.find(to_id);
+        if (it != userConnMap_.end()) {
+            // to_id 在线，直接转发消息
+            (it->second)->send(js.dump());
+            return;
+        }
+    }
+
+    // to_id 不在线，存储离线消息
 }

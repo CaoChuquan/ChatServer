@@ -26,6 +26,9 @@ public:
     MsgHandler getHandler(int msgid);
     // 处理客户端异常退出
     void clientCloseExpection(const TcpConnectionPtr&);
+
+    // 一对一聊天业务
+    void oneChat(const TcpConnectionPtr&, json&, Timestamp);
 private:
     ChatService();
 
@@ -34,9 +37,6 @@ private:
 
     // 存储在线用户的通信连接
     std::unordered_map<int, TcpConnectionPtr> userConnMap_;
-
-    // 数据操作类对象
-    // UserModel userModel_;
 
     std::mutex mutex_;
 };

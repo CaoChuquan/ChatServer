@@ -1,5 +1,7 @@
 #pragma once
 
 #include "database.h"
+#include <string>
 
-bool UserUpdateState(int id, bool stat);
+int userRegister(std::string&, std::string&);
+bool userUpdateState(int id, bool stat);

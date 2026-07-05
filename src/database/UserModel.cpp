@@ -1,6 +1,24 @@
 #include "UserModel.h"
 
-bool UserUpdateState(int id, bool s) {
+using std::string;
+
+int userRegister(string& name, string& password) {
+    // 组装 SQL 语句
+    char sql[1024] = { 0 };
+    sprintf(sql, "insert into User(name, password, state) values('%s', '%s', 'offline')",
+        name.c_str(), password.c_str());
+
+    // 执行 SQL 语句
+    MySQL mysql;
+    if (mysql.connect() && mysql.update(sql)) {
+        return mysql_insert_id(mysql.getConnection());
+    }
+    else {
+        return -1;
+    }
+}
+
+bool userUpdateState(int id, bool s) {
     char sql[100] = { 0 };
     if (s) {
         sprintf(sql, "update User set state = 'online' where id = %d", id);
