@@ -26,7 +26,9 @@ ChatServer::ChatServer(EventLoop* loop,
 void ChatServer::onConnection(const TcpConnectionPtr& conn) {
     if (conn->connected()) {
 
-    } else {
+    } 
+    else {
+        ChatService::instance()->clientCloseExpection(conn);
         conn->shutdown(); // 释放资源
     }
 }

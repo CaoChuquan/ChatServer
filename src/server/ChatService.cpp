@@ -1,7 +1,6 @@
 #include "ChatService.h"
 #include "public.h"
-#include "database.h"
-#include "User.h"
+#include "UserModel.h"
 #include <string>
 #include <muduo/base/Logging.h>
 
@@ -44,7 +43,7 @@ void ChatService::loginServer(const TcpConnectionPtr& conn,
     string user_stat;
     // 查找用户
     char sql[100] = { 0 };
-    sprintf(sql, "select * from User from where id = %d", enter_id);
+    sprintf(sql, "select * from User where id = %d", enter_id);
     MySQL mysql;
     if (mysql.connect()) {
         MYSQL_RES* res = mysql.query(sql);
@@ -79,8 +78,7 @@ void ChatService::loginServer(const TcpConnectionPtr& conn,
     // 查找到用户后，匹配密码
     if (enter_pwd == user_pwd) {
         // 更新用户状态
-        char sql[100] = { 0 };
-        sprintf(sql, "update User set state = 'online' where id = %d", enter_id);
+        UserUpdateState(enter_id, true);
 
         // 记录用户连接信息
         {
@@ -133,5 +131,26 @@ void ChatService::registerServer(const TcpConnectionPtr& conn,
         response["msgid"] = REGISTER_MSG_ACK;
         response["errno"] = 1;
         conn->send(response.dump());
+    }
+}
+
+void ChatService::clientCloseExpection(const TcpConnectionPtr& conn) {
+    int id = 0;
+
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        for (auto& it : userConnMap_) {
+            // 从 map 表删除用户的连接信息
+            if (it.second == conn) {
+                id = it.first;
+                userConnMap_.erase(id);
+                break;
+            }
+        }
+    }
+
+    // 更新用户信息
+    if (id != -1) {
+        UserUpdateState(id, false);
     }
 }
