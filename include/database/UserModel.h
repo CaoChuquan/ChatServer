@@ -5,3 +5,4 @@
 
 int userRegister(std::string&, std::string&);
 bool userUpdateState(int id, bool stat);
+void userResetState();

@@ -33,3 +33,12 @@ bool userUpdateState(int id, bool s) {
     }
     return false;
 }
+
+void userResetState() {
+    char sql[] = "update User set state = 'offline' where state = 'online'";
+ 
+    MySQL mysql;
+    if (mysql.connect()) {
+        mysql.update(sql);
+    }
+}

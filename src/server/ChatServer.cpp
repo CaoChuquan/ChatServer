@@ -3,6 +3,8 @@
 #include "ChatService.h"
 
 using nlohmann::json;
+using namespace muduo;
+using namespace muduo::net;
 
 ChatServer::ChatServer(EventLoop* loop, 
     const InetAddress& listenAddr,
@@ -16,11 +18,11 @@ ChatServer::ChatServer(EventLoop* loop,
     });
 
     // 注册消息回调
-    server_.setMessageCallback([this] (const TcpConnectionPtr& p, Buffer* b, Timestamp t) 
+    server_.setMessageCallback([this] (const TcpConnectionPtr& p, Buffer* b, Timestamp t)
         { this->onMessage(p, b, t); });
 
     // 设置线程数量
-    server_.setThreadNum(4);    
+    server_.setThreadNum(4);
 }
 
 void ChatServer::onConnection(const TcpConnectionPtr& conn) {

@@ -26,6 +26,8 @@ public:
     MsgHandler getHandler(int msgid);
     // 处理客户端异常退出
     void clientCloseExpection(const TcpConnectionPtr&);
+    // 用于服务器异常后业务重置
+    void reset();
 
     // 一对一聊天业务
     void oneChat(const TcpConnectionPtr&, json&, Timestamp);

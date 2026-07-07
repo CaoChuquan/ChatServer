@@ -175,3 +175,8 @@ void ChatService::oneChat(const TcpConnectionPtr& conn,
     // to_id 不在线，存储离线消息
     offlineMessageStore(to_id, js.dump());
 }
+
+void ChatService::reset() {
+    // 把 online 状态的用户设置成 offline
+    userResetState();
+}
