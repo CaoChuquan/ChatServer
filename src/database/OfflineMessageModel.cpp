@@ -23,7 +23,7 @@ void offlineMessageRemove(int id) {
 }
 
 std::vector<std::string> offlineMessageQuery(int id) {
-    char sql[100] = { 0 };
+    char sql[120] = { 0 };
     sprintf(sql, "select message from OfflineMessage where userid = %d", id);
 
     std::vector<std::string> vec;

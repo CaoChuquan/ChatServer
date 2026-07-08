@@ -31,6 +31,8 @@ public:
 
     // 一对一聊天业务
     void oneChat(const TcpConnectionPtr&, json&, Timestamp);
+    // 添加好友业务
+    void addFriend(const TcpConnectionPtr&, json&, Timestamp);
 private:
     ChatService();
 
@@ -42,4 +44,3 @@ private:
 
     std::mutex mutex_;
 };
-

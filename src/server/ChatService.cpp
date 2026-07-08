@@ -2,10 +2,12 @@
 #include "public.h"
 #include "UserModel.h"
 #include "OfflineMessageModel.h"
+#include "FriendModel.h"
 #include <string>
 #include <muduo/base/Logging.h>
 
 using std::string;
+using std::vector;
 
 // 获取单例对象
 ChatService* ChatService::instance() {
@@ -24,6 +26,9 @@ ChatService::ChatService() {
     msgHandlerMap_.insert({ ONE_CHAT_MSG, 
         [this](const TcpConnectionPtr& c, json& j, Timestamp t)
         { this->oneChat(c, j, t); } });
+    msgHandlerMap_.insert({ ADD_FRIEND_MSG, 
+        [this](const TcpConnectionPtr& c, json& j, Timestamp t)
+        { this->addFriend(c, j, t); } });    
 }
 
 ChatService::MsgHandler ChatService::getHandler(int msgid) {
@@ -95,11 +100,24 @@ void ChatService::loginServer(const TcpConnectionPtr& conn,
         response["msgid"] = LOGIN_MSG_ACK;
         response["errno"] = 0;
         // 查询用户是否有离线消息
-        std::vector<std::string> vec = offlineMessageQuery(enter_id);
+        vector<std::string> vec = offlineMessageQuery(enter_id);
         if (!vec.empty()) {
             response["offlinemsg"] = vec;
             // 读取该用户离线消息后，把该用户的离线消息删除
             offlineMessageRemove(enter_id);
+        }
+        // 查询用户的好友信息并返回
+        vector<User> userVec = friendQuery(enter_id);
+        if (!userVec.empty()) {
+            vector<string> tempVec;
+            for (auto user : userVec) {
+                json js;
+                js["id"] = user.id_;
+                js["name"] = user.name_;
+                js["state"] = user.state_;
+                tempVec.push_back(js.dump());
+            }
+            response["friends"] = tempVec;
         }
 
         conn->send(response.dump());
@@ -179,4 +197,14 @@ void ChatService::oneChat(const TcpConnectionPtr& conn,
 void ChatService::reset() {
     // 把 online 状态的用户设置成 offline
     userResetState();
+}
+
+void ChatService::addFriend(const TcpConnectionPtr& conn, 
+    json& js, Timestamp time) 
+{
+    int user_id = js["id"].get<int>();
+    int friend_id = js["friendid"].get<int>();
+
+    // 存储好友信息
+    friendInsert(user_id, friend_id);
 }
