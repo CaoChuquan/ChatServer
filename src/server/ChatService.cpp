@@ -26,9 +26,18 @@ ChatService::ChatService() {
     msgHandlerMap_.insert({ ONE_CHAT_MSG, 
         [this](const TcpConnectionPtr& c, json& j, Timestamp t)
         { this->oneChat(c, j, t); } });
-    msgHandlerMap_.insert({ ADD_FRIEND_MSG, 
+    msgHandlerMap_.insert({ ADD_FRIEND_MSG,
         [this](const TcpConnectionPtr& c, json& j, Timestamp t)
-        { this->addFriend(c, j, t); } });    
+        { this->addFriend(c, j, t); } });
+    msgHandlerMap_.insert({ CREATE_GROUP_MSG,
+        [this](const TcpConnectionPtr& c, json& j, Timestamp t)
+        { this->createGroup(c, j, t); } });
+    msgHandlerMap_.insert({ ADD_GROUP_MSG,
+        [this](const TcpConnectionPtr& c, json& j, Timestamp t)
+        { this->addGroup(c, j, t); } });
+    msgHandlerMap_.insert({ GROUP_CHAT_MSG,
+        [this](const TcpConnectionPtr& c, json& j, Timestamp t)
+        { this->groupChat(c, j, t); } });
 }
 
 ChatService::MsgHandler ChatService::getHandler(int msgid) {
@@ -207,4 +216,46 @@ void ChatService::addFriend(const TcpConnectionPtr& conn,
 
     // 存储好友信息
     friendInsert(user_id, friend_id);
+}
+
+void ChatService::createGroup(const TcpConnectionPtr& conn, 
+json& js, Timestamp time)
+{
+    int user_id = js["id"].get<int>();
+    string name = js["groupname"];
+    string desc = js["groupdesc"];
+
+    Group group(-1, name, desc);
+    if (groupModel_.createGroup(group)) {
+        groupModel_.addGroup(user_id, group.getId(), "creator");
+    }
+}
+
+void ChatService::addGroup(const TcpConnectionPtr& conn, 
+json& js, Timestamp time)
+{
+    int user_id = js["id"].get<int>();
+    int group_id = js["groupid"].get<int>();
+    groupModel_.addGroup(user_id, group_id, "normal");
+}
+
+void ChatService::groupChat(const TcpConnectionPtr& conn, 
+json& js, Timestamp time)
+{
+    int user_id = js["id"].get<int>();
+    int group_id = js["groupid"].get<int>();
+    vector<int> useridVec = groupModel_.queryGroupUsers(user_id, group_id);
+
+    std::lock_guard<std::mutex> lock(mutex_);
+    for (int id : useridVec) {
+        auto it = userConnMap_.find(id);
+        if (it != userConnMap_.end()) {
+            // 转发群消息
+            it->second->send(js.dump());
+        }
+        else {
+            // 存储离线消息
+            offlineMessageStore(id, js.dump());
+        }
+    }
 }

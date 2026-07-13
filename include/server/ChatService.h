@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <functional>
 #include <mutex>
+#include "GroupModel.h"
 #include "json.hpp"
 
 using nlohmann::json;
@@ -33,6 +34,12 @@ public:
     void oneChat(const TcpConnectionPtr&, json&, Timestamp);
     // 添加好友业务
     void addFriend(const TcpConnectionPtr&, json&, Timestamp);
+    // 创建群组业务
+    void createGroup(const TcpConnectionPtr&, json&, Timestamp);
+    // 加入群组业务
+    void addGroup(const TcpConnectionPtr&, json&, Timestamp);
+    // 群组聊天业务
+    void groupChat(const TcpConnectionPtr&, json&, Timestamp);
 private:
     ChatService();
 
@@ -43,4 +50,6 @@ private:
     std::unordered_map<int, TcpConnectionPtr> userConnMap_;
 
     std::mutex mutex_;
+
+    GroupModel groupModel_;
 };
